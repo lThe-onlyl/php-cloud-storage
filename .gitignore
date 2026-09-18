@@ -1,0 +1,8 @@
+/vendor/
+.env
+
+/storage/files/*
+!/storage/files/.gitkeep
+
+.vscode/
+.idea/
