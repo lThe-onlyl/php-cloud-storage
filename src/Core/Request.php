@@ -65,4 +65,23 @@ class Request
 
     return $_POST;
   }
+  public function getHeader(string $name): ?string
+  {
+    $key = 'HTTP_' . strtoupper(
+      str_replace('-', '_', $name)
+    );
+
+    if (isset($_SERVER[$key])) {
+      return $_SERVER[$key];
+    }
+
+    if (
+      strtolower($name) === 'authorization' &&
+      isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])
+    ) {
+      return $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+    }
+
+    return null;
+  }
 }
