@@ -1,0 +1,11 @@
+{
+    "name": "lthe-onlyl/php-cloud-storage",
+    "description": "REST API for a cloud file storage built with PHP and MySQL",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require": {}
+}
