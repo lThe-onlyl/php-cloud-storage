@@ -8,9 +8,13 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;
 use App\Controllers\UserController;
+use App\Core\App;
+use App\Controllers\AdminController;
 
 $request = new Request();
 $router = new Router();
+$app = new App();
+$adminController = new AdminController($app);
 
 $router->add(
   'GET',
@@ -24,7 +28,7 @@ $router->add(
   }
 );
 
-$userController = new UserController();
+$userController = new UserController($app);
 
 $router->add(
   'POST',
@@ -48,6 +52,48 @@ $router->add(
   'GET',
   '/users/logout',
   [$userController, 'logout']
+);
+
+$router->add(
+  'GET',
+  '/users/list',
+  [$userController, 'list']
+);
+
+$router->add(
+  'GET',
+  '/users/get/{id}',
+  [$userController, 'get']
+);
+
+$router->add(
+  'PUT',
+  '/users/update',
+  [$userController, 'update']
+);
+
+$router->add(
+  'GET',
+  '/admin/users/list',
+  [$adminController, 'list']
+);
+
+$router->add(
+  'GET',
+  '/admin/users/get/{id}',
+  [$adminController, 'get']
+);
+
+$router->add(
+  'PUT',
+  '/admin/users/update/{id}',
+  [$adminController, 'update']
+);
+
+$router->add(
+  'DELETE',
+  '/admin/users/delete/{id}',
+  [$adminController, 'delete']
 );
 
 $response = $router->processRequest($request);

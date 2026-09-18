@@ -76,4 +76,17 @@ class AuthService
 
     $this->tokenRepository->delete($token);
   }
+
+  public function getAdmin(Request $request): array
+  {
+    $user = $this->getUser($request);
+
+    if ($user['role'] !== 'admin') {
+      throw new RuntimeException(
+        'Administrator access required'
+      );
+    }
+
+    return $user;
+  }
 }

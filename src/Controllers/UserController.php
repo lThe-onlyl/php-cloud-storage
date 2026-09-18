@@ -10,16 +10,23 @@ use App\Services\UserService;
 use InvalidArgumentException;
 use Throwable;
 use App\Services\AuthService;
+use App\Core\App;
 
 class UserController
 {
   private UserService $userService;
   private AuthService $authService;
 
-  public function __construct()
+  public function __construct(App $app)
   {
-    $this->userService = new UserService();
-    $this->authService = new AuthService();
+    /** @var UserService $userService */
+    $userService = $app->getService('user');
+
+    /** @var AuthService $authService */
+    $authService = $app->getService('auth');
+
+    $this->userService = $userService;
+    $this->authService = $authService;
   }
 
   public function register(Request $request): Response
@@ -109,6 +116,84 @@ class UserController
       return (new Response())
         ->setData([
           'message' => 'Logout successful',
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(401)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
+
+  public function list(Request $request): Response
+  {
+    try {
+      $this->authService->getUser($request);
+
+      return (new Response())
+        ->setData([
+          'users' => $this->userService->getUsers(),
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(401)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
+
+  public function get(
+    Request $request,
+    array $parameters
+  ): Response {
+    try {
+      $this->authService->getUser($request);
+
+      $id = (int) ($parameters['id'] ?? 0);
+
+      $user = $this->userService->getUser($id);
+
+      return (new Response())
+        ->setData([
+          'user' => $user,
+        ]);
+    } catch (InvalidArgumentException $exception) {
+      return (new Response())
+        ->setStatusCode(404)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(401)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
+
+  public function update(Request $request): Response
+  {
+    try {
+      $currentUser = $this->authService->getUser($request);
+
+      $user = $this->userService->updateProfile(
+        (int) $currentUser['id'],
+        $request->getData()
+      );
+
+      return (new Response())
+        ->setData([
+          'message' => 'Profile updated successfully',
+          'user' => $user,
+        ]);
+    } catch (InvalidArgumentException $exception) {
+      return (new Response())
+        ->setStatusCode(400)
+        ->setData([
+          'error' => $exception->getMessage(),
         ]);
     } catch (Throwable $exception) {
       return (new Response())

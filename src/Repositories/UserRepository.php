@@ -36,4 +36,65 @@ class UserRepository extends Db
   {
     return $this->find('users', $id);
   }
+
+  public function getAll(): array
+  {
+    $statement = $this->pdo->query(
+      'SELECT id, email, name, role, created_at
+         FROM users'
+    );
+
+    return $statement->fetchAll();
+  }
+
+  public function update(
+    int $id,
+    string $email,
+    string $name
+  ): void {
+    $statement = $this->pdo->prepare(
+      'UPDATE users
+         SET email = :email, name = :name
+         WHERE id = :id'
+    );
+
+    $statement->execute([
+      'id' => $id,
+      'email' => $email,
+      'name' => $name,
+    ]);
+  }
+
+  public function deleteById(int $id): void
+  {
+    $statement = $this->pdo->prepare(
+      'DELETE FROM users WHERE id = :id'
+    );
+
+    $statement->execute([
+      'id' => $id,
+    ]);
+  }
+
+  public function adminUpdate(
+    int $id,
+    string $email,
+    string $name,
+    string $role
+  ): void {
+    $statement = $this->pdo->prepare(
+      'UPDATE users
+         SET email = :email,
+             name = :name,
+             role = :role
+         WHERE id = :id'
+    );
+
+    $statement->execute([
+      'id' => $id,
+      'email' => $email,
+      'name' => $name,
+      'role' => $role,
+    ]);
+  }
 }

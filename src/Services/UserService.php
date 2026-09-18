@@ -106,4 +106,137 @@ class UserService
       ],
     ];
   }
+
+  public function getUsers(): array
+  {
+    return $this->userRepository->getAll();
+  }
+
+  public function getUser(int $id): array
+  {
+    $user = $this->userRepository->findById($id);
+
+    if ($user === null) {
+      throw new InvalidArgumentException(
+        'User not found'
+      );
+    }
+
+    return [
+      'id' => (int) $user['id'],
+      'email' => $user['email'],
+      'name' => $user['name'],
+      'role' => $user['role'],
+      'created_at' => $user['created_at'],
+    ];
+  }
+
+  public function updateProfile(
+    int $userId,
+    array $data
+  ): array {
+    $user = $this->userRepository->findById($userId);
+
+    if ($user === null) {
+      throw new InvalidArgumentException(
+        'User not found'
+      );
+    }
+
+    $email = trim($data['email'] ?? $user['email']);
+    $name = trim($data['name'] ?? $user['name']);
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      throw new InvalidArgumentException(
+        'Invalid email'
+      );
+    }
+
+    if ($name === '') {
+      throw new InvalidArgumentException(
+        'Name is required'
+      );
+    }
+
+    $existingUser = $this->userRepository->findByEmail($email);
+
+    if (
+      $existingUser !== null &&
+      (int) $existingUser['id'] !== $userId
+    ) {
+      throw new InvalidArgumentException(
+        'User with this email already exists'
+      );
+    }
+
+    $this->userRepository->update(
+      $userId,
+      $email,
+      $name
+    );
+
+    return $this->getUser($userId);
+  }
+
+  public function deleteUser(int $id): void
+  {
+    $user = $this->userRepository->findById($id);
+
+    if ($user === null) {
+      throw new InvalidArgumentException(
+        'User not found'
+      );
+    }
+
+    $this->userRepository->deleteById($id);
+  }
+
+  public function adminUpdateUser(
+    int $id,
+    array $data
+  ): array {
+    $user = $this->userRepository->findById($id);
+
+    if ($user === null) {
+      throw new InvalidArgumentException(
+        'User not found'
+      );
+    }
+
+    $email = trim($data['email'] ?? $user['email']);
+    $name = trim($data['name'] ?? $user['name']);
+    $role = $data['role'] ?? $user['role'];
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      throw new InvalidArgumentException('Invalid email');
+    }
+
+    if ($name === '') {
+      throw new InvalidArgumentException('Name is required');
+    }
+
+    if (!in_array($role, ['user', 'admin'], true)) {
+      throw new InvalidArgumentException('Invalid role');
+    }
+
+    $existingUser = $this->userRepository->findByEmail($email);
+
+    if (
+      $existingUser !== null &&
+      (int) $existingUser['id'] !== $id
+    ) {
+      throw new InvalidArgumentException(
+        'User with this email already exists'
+      );
+    }
+
+    $this->userRepository->adminUpdate(
+      $id,
+      $email,
+      $name,
+      $role
+    );
+
+    return $this->getUser($id);
+  }
 }
