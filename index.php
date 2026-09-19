@@ -10,11 +10,13 @@ use App\Core\Router;
 use App\Controllers\UserController;
 use App\Core\App;
 use App\Controllers\AdminController;
+use App\Controllers\FileController;
 
 $request = new Request();
 $router = new Router();
 $app = new App();
 $adminController = new AdminController($app);
+$fileController = new FileController($app);
 
 $router->add(
   'GET',
@@ -94,6 +96,48 @@ $router->add(
   'DELETE',
   '/admin/users/delete/{id}',
   [$adminController, 'delete']
+);
+
+$router->add(
+  'POST',
+  '/directories/add',
+  [$fileController, 'addDirectory']
+);
+
+$router->add(
+  'GET',
+  '/directories/get/{id}',
+  [$fileController, 'getDirectory']
+);
+
+$router->add(
+  'PUT',
+  '/directories/rename',
+  [$fileController, 'renameDirectory']
+);
+
+$router->add(
+  'DELETE',
+  '/directories/delete/{id}',
+  [$fileController, 'deleteDirectory']
+);
+
+$router->add(
+  'POST',
+  '/files/add',
+  [$fileController, 'addFile']
+);
+
+$router->add(
+  'GET',
+  '/files/list',
+  [$fileController, 'listFiles']
+);
+
+$router->add(
+  'GET',
+  '/files/get/{id}',
+  [$fileController, 'getFile']
 );
 
 $response = $router->processRequest($request);

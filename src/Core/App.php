@@ -7,6 +7,8 @@ namespace App\Core;
 use App\Services\AuthService;
 use App\Services\UserService;
 use InvalidArgumentException;
+use App\Services\DirectoryService;
+use App\Services\FileService;
 
 class App
 {
@@ -17,6 +19,8 @@ class App
     $this->services = [
       'user' => new UserService(),
       'auth' => new AuthService(),
+      'directory' => new DirectoryService(),
+      'file' => new FileService(),
     ];
   }
 

@@ -84,4 +84,9 @@ class Request
 
     return null;
   }
+
+  public function getFiles(): array
+  {
+    return $_FILES;
+  }
 }
