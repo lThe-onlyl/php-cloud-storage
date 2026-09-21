@@ -12,12 +12,14 @@ use App\Services\DirectoryService;
 use InvalidArgumentException;
 use Throwable;
 use App\Services\FileService;
+use App\Services\ShareService;
 
 class FileController
 {
   private AuthService $authService;
   private DirectoryService $directoryService;
   private FileService $fileService;
+  private ShareService $shareService;
 
   public function __construct(App $app)
   {
@@ -33,6 +35,7 @@ class FileController
     $this->fileService = $fileService;
     $this->authService = $authService;
     $this->directoryService = $directoryService;
+    $this->shareService = $app->getService('share');
   }
 
   public function addDirectory(Request $request): Response
@@ -303,6 +306,84 @@ class FileController
         ->setData([
           'message' => 'File moved successfully',
           'file' => $file,
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(400)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
+
+  public function getShares(
+    Request $request,
+    array $parameters
+  ): Response {
+    try {
+      $user = $this->authService->getUser($request);
+
+      $shares = $this->shareService->getShares(
+        (int) $user['id'],
+        (int) ($parameters['id'] ?? 0)
+      );
+
+      return (new Response())
+        ->setData([
+          'shares' => $shares,
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(404)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
+
+  public function share(
+    Request $request,
+    array $parameters
+  ): Response {
+    try {
+      $user = $this->authService->getUser($request);
+
+      $result = $this->shareService->share(
+        (int) $user['id'],
+        (int) ($parameters['id'] ?? 0),
+        (int) ($parameters['user_id'] ?? 0)
+      );
+
+      return (new Response())
+        ->setStatusCode(201)
+        ->setData([
+          'share' => $result,
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(400)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
+
+  public function unshare(
+    Request $request,
+    array $parameters
+  ): Response {
+    try {
+      $user = $this->authService->getUser($request);
+
+      $this->shareService->unshare(
+        (int) $user['id'],
+        (int) ($parameters['id'] ?? 0),
+        (int) ($parameters['user_id'] ?? 0)
+      );
+
+      return (new Response())
+        ->setData([
+          'message' => 'File sharing removed',
         ]);
     } catch (Throwable $exception) {
       return (new Response())

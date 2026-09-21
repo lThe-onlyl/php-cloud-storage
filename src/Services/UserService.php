@@ -239,4 +239,29 @@ class UserService
 
     return $this->getUser($id);
   }
+
+  public function searchByEmail(string $email): array
+  {
+    $email = trim($email);
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      throw new InvalidArgumentException(
+        'Invalid email'
+      );
+    }
+
+    $user = $this->userRepository->findByEmail($email);
+
+    if ($user === null) {
+      throw new InvalidArgumentException(
+        'User not found'
+      );
+    }
+
+    return [
+      'id' => (int) $user['id'],
+      'email' => $user['email'],
+      'name' => $user['name'],
+    ];
+  }
 }

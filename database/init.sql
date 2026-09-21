@@ -63,3 +63,22 @@ CREATE TABLE IF NOT EXISTS files (
         REFERENCES directories(id)
         ON DELETE SET NULL
 );
+
+CREATE TABLE IF NOT EXISTS file_shares (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    file_id INT UNSIGNED NOT NULL,
+    user_id INT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY unique_file_user (file_id, user_id),
+
+    CONSTRAINT fk_file_shares_file
+        FOREIGN KEY (file_id)
+        REFERENCES files(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_file_shares_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);

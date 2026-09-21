@@ -9,6 +9,7 @@ use App\Services\UserService;
 use InvalidArgumentException;
 use App\Services\DirectoryService;
 use App\Services\FileService;
+use App\Services\ShareService;
 
 class App
 {
@@ -21,6 +22,7 @@ class App
       'auth' => new AuthService(),
       'directory' => new DirectoryService(),
       'file' => new FileService(),
+      'share' => new ShareService(),
     ];
   }
 

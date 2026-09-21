@@ -203,4 +203,28 @@ class UserController
         ]);
     }
   }
+
+  public function search(
+    Request $request,
+    array $parameters
+  ): Response {
+    try {
+      $this->authService->getUser($request);
+
+      $email = $parameters['email'] ?? '';
+
+      $user = $this->userService->searchByEmail($email);
+
+      return (new Response())
+        ->setData([
+          'user' => $user,
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(404)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
 }

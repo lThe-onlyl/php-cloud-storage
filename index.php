@@ -158,6 +158,30 @@ $router->add(
   [$fileController, 'moveFile']
 );
 
+$router->add(
+  'GET',
+  '/user/search/{email}',
+  [$userController, 'search']
+);
+
+$router->add(
+  'GET',
+  '/files/share/{id}',
+  [$fileController, 'getShares']
+);
+
+$router->add(
+  'PUT',
+  '/files/share/{id}/{user_id}',
+  [$fileController, 'share']
+);
+
+$router->add(
+  'DELETE',
+  '/files/share/{id}/{user_id}',
+  [$fileController, 'unshare']
+);
+
 $response = $router->processRequest($request);
 
 $response->send();
