@@ -152,4 +152,77 @@ class FileService
   {
     return $this->fileRepository->getByUser($userId);
   }
+
+  public function rename(
+    int $userId,
+    array $data
+  ): array {
+    $id = (int) ($data['id'] ?? 0);
+    $name = trim($data['name'] ?? '');
+
+    if ($id <= 0 || $name === '') {
+      throw new InvalidArgumentException(
+        'File id and name are required'
+      );
+    }
+
+    $this->get($userId, $id);
+
+    $this->fileRepository->rename($id, $name);
+
+    return $this->get($userId, $id);
+  }
+
+  public function delete(
+    int $userId,
+    int $id
+  ): void {
+    $file = $this->get($userId, $id);
+
+    $path = $this->storagePath . $file['stored_name'];
+
+    if (is_file($path) && !unlink($path)) {
+      throw new RuntimeException(
+        'Unable to delete file from storage'
+      );
+    }
+
+    $this->fileRepository->delete($id);
+  }
+
+  public function move(
+    int $userId,
+    array $data
+  ): array {
+    $id = (int) ($data['id'] ?? 0);
+
+    $directoryId = isset($data['directory_id'])
+      && $data['directory_id'] !== ''
+      ? (int) $data['directory_id']
+      : null;
+
+    $file = $this->get($userId, $id);
+
+    if ($directoryId !== null) {
+      $directory = $this->directoryRepository->findById(
+        $directoryId
+      );
+
+      if (
+        $directory === null ||
+        (int) $directory['user_id'] !== $userId
+      ) {
+        throw new RuntimeException(
+          'Directory not found'
+        );
+      }
+    }
+
+    $this->fileRepository->move(
+      $id,
+      $directoryId
+    );
+
+    return $this->get($userId, $id);
+  } 
 }

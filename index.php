@@ -140,6 +140,24 @@ $router->add(
   [$fileController, 'getFile']
 );
 
+$router->add(
+  'PUT',
+  '/files/rename',
+  [$fileController, 'renameFile']
+);
+
+$router->add(
+  'DELETE',
+  '/files/remove/{id}',
+  [$fileController, 'removeFile']
+);
+
+$router->add(
+  'PUT',
+  '/files/move',
+  [$fileController, 'moveFile']
+);
+
 $response = $router->processRequest($request);
 
 $response->send();

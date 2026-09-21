@@ -100,4 +100,20 @@ class FileRepository extends Db
       'id' => $id,
     ]);
   }
+
+  public function move(
+    int $id,
+    ?int $directoryId
+  ): void {
+    $statement = $this->pdo->prepare(
+      'UPDATE files
+         SET directory_id = :directory_id
+         WHERE id = :id'
+    );
+
+    $statement->execute([
+      'id' => $id,
+      'directory_id' => $directoryId,
+    ]);
+  }
 }

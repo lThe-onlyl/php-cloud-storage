@@ -90,4 +90,22 @@ class DirectoryRepository extends Db
       'id' => $id,
     ]);
   }
+
+  public function getFiles(int $userId, int $directoryId): array
+  {
+    $statement = $this->pdo->prepare(
+      'SELECT id, user_id, directory_id, original_name,
+                stored_name, mime_type, size, created_at
+         FROM files
+         WHERE user_id = :user_id
+         AND directory_id = :directory_id'
+    );
+
+    $statement->execute([
+      'user_id' => $userId,
+      'directory_id' => $directoryId,
+    ]);
+
+    return $statement->fetchAll();
+  }
 }

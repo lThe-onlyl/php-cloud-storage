@@ -73,7 +73,7 @@ class FileController
     try {
       $user = $this->authService->getUser($request);
 
-      $directory = $this->directoryService->get(
+      $directory = $this->directoryService->getWithFiles(
         (int) $user['id'],
         (int) ($parameters['id'] ?? 0)
       );
@@ -228,6 +228,85 @@ class FileController
     } catch (Throwable $exception) {
       return (new Response())
         ->setStatusCode(404)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
+
+  public function renameFile(Request $request): Response
+  {
+    try {
+      $user = $this->authService->getUser($request);
+
+      $file = $this->fileService->rename(
+        (int) $user['id'],
+        $request->getData()
+      );
+
+      return (new Response())
+        ->setData([
+          'message' => 'File renamed successfully',
+          'file' => $file,
+        ]);
+    } catch (InvalidArgumentException $exception) {
+      return (new Response())
+        ->setStatusCode(400)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(404)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
+
+  public function removeFile(
+    Request $request,
+    array $parameters
+  ): Response {
+    try {
+      $user = $this->authService->getUser($request);
+
+      $this->fileService->delete(
+        (int) $user['id'],
+        (int) ($parameters['id'] ?? 0)
+      );
+
+      return (new Response())
+        ->setData([
+          'message' => 'File deleted successfully',
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(404)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
+
+  public function moveFile(Request $request): Response
+  {
+    try {
+      $user = $this->authService->getUser($request);
+
+      $file = $this->fileService->move(
+        (int) $user['id'],
+        $request->getData()
+      );
+
+      return (new Response())
+        ->setData([
+          'message' => 'File moved successfully',
+          'file' => $file,
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(400)
         ->setData([
           'error' => $exception->getMessage(),
         ]);

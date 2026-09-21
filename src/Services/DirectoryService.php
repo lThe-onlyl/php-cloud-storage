@@ -103,4 +103,25 @@ class DirectoryService
 
     $this->directoryRepository->delete($id);
   }
+
+  public function getWithFiles(
+    int $userId,
+    int $id
+  ): array {
+    $directory = $this->get($userId, $id);
+
+    return [
+      'id' => (int) $directory['id'],
+      'user_id' => (int) $directory['user_id'],
+      'parent_id' => $directory['parent_id'] !== null
+        ? (int) $directory['parent_id']
+        : null,
+      'name' => $directory['name'],
+      'created_at' => $directory['created_at'],
+      'files' => $this->directoryRepository->getFiles(
+        $userId,
+        $id
+      ),
+    ];
+  }
 }
