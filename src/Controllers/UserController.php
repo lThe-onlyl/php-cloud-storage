@@ -11,11 +11,15 @@ use InvalidArgumentException;
 use Throwable;
 use App\Services\AuthService;
 use App\Core\App;
+use App\Services\PasswordResetService;
+use App\Services\MailService;
 
 class UserController
 {
   private UserService $userService;
   private AuthService $authService;
+  private PasswordResetService $passwordResetService;
+  private MailService $mailService;
 
   public function __construct(App $app)
   {
@@ -27,6 +31,10 @@ class UserController
 
     $this->userService = $userService;
     $this->authService = $authService;
+    $this->passwordResetService = $app->getService(
+      'passwordReset'
+    );
+    $this->mailService = $app->getService('mail');
   }
 
   public function register(Request $request): Response
@@ -222,6 +230,67 @@ class UserController
     } catch (Throwable $exception) {
       return (new Response())
         ->setStatusCode(404)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
+
+  public function requestPasswordReset(
+    Request $request,
+    array $parameters
+  ): Response {
+    try {
+      $data = $request->getData();
+
+      $result = $this->passwordResetService
+        ->createResetToken(
+          $data['email'] ?? ''
+        );
+
+      $resetUrl = sprintf(
+        'http://localhost/cloud-storage/'
+        . 'reset-password?token=%s',
+        urlencode($result['token'])
+      );
+
+      $this->mailService->sendPasswordReset(
+        $data['email'],
+        $resetUrl
+      );
+
+      return (new Response())
+        ->setData([
+          'message' =>
+            'Password reset link has been sent',
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(400)
+        ->setData([
+          'error' => $exception->getMessage(),
+        ]);
+    }
+  }
+
+  public function resetPassword(
+    Request $request
+  ): Response {
+    try {
+      $data = $request->getData();
+
+      $this->passwordResetService->resetPassword(
+        $data['token'] ?? '',
+        $data['password'] ?? ''
+      );
+
+      return (new Response())
+        ->setData([
+          'message' => 'Password has been reset',
+        ]);
+    } catch (Throwable $exception) {
+      return (new Response())
+        ->setStatusCode(400)
         ->setData([
           'error' => $exception->getMessage(),
         ]);

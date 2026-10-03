@@ -6,11 +6,11 @@ namespace App\Core;
 
 class Response
 {
-  private mixed $data = null;
+  private $data = null;
   private int $statusCode = 200;
   private array $headers = [];
 
-  public function setData(mixed $data): self
+  public function setData($data): self
   {
     $this->data = $data;
 

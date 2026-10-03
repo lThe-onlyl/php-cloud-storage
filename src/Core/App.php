@@ -10,6 +10,8 @@ use InvalidArgumentException;
 use App\Services\DirectoryService;
 use App\Services\FileService;
 use App\Services\ShareService;
+use App\Services\PasswordResetService;
+use App\Services\MailService;
 
 class App
 {
@@ -23,6 +25,8 @@ class App
       'directory' => new DirectoryService(),
       'file' => new FileService(),
       'share' => new ShareService(),
+      'passwordReset' => new PasswordResetService(),
+      'mail' => new MailService(),
     ];
   }
 

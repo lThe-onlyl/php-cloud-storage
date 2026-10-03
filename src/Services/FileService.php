@@ -8,19 +8,20 @@ use App\Repositories\DirectoryRepository;
 use App\Repositories\FileRepository;
 use InvalidArgumentException;
 use RuntimeException;
+use App\Repositories\ShareRepository;
 
 class FileService
 {
   private FileRepository $fileRepository;
   private DirectoryRepository $directoryRepository;
-
+  private ShareRepository $shareRepository;
   private string $storagePath;
 
   public function __construct()
   {
     $this->fileRepository = new FileRepository();
     $this->directoryRepository = new DirectoryRepository();
-
+    $this->shareRepository = new ShareRepository();
     $this->storagePath = dirname(__DIR__, 2)
       . '/storage/files/';
   }
@@ -45,7 +46,17 @@ class FileService
 
     if ($file['error'] !== UPLOAD_ERR_OK) {
       throw new RuntimeException(
-        'File upload failed'
+        $this->getUploadErrorMessage(
+          (int) $file['error']
+        )
+      );
+    }
+
+    $maxFileSize = 2 * 1024 * 1024 * 1024;
+
+    if ((int) $file['size'] > $maxFileSize) {
+      throw new InvalidArgumentException(
+        'File size must not exceed 2 GB'
       );
     }
 
@@ -136,10 +147,20 @@ class FileService
   ): array {
     $file = $this->fileRepository->findById($id);
 
-    if (
-      $file === null ||
-      (int) $file['user_id'] !== $userId
-    ) {
+    if ($file === null) {
+      throw new RuntimeException(
+        'File not found'
+      );
+    }
+
+    $isOwner = (int) $file['user_id'] === $userId;
+
+    $hasAccess = $this->shareRepository->hasAccess(
+      $id,
+      $userId
+    );
+
+    if (!$isOwner && !$hasAccess) {
       throw new RuntimeException(
         'File not found'
       );
@@ -150,7 +171,7 @@ class FileService
 
   public function getList(int $userId): array
   {
-    return $this->fileRepository->getByUser($userId);
+    return $this->fileRepository->getAccessibleByUser($userId);
   }
 
   public function rename(
@@ -166,7 +187,7 @@ class FileService
       );
     }
 
-    $this->get($userId, $id);
+    $this->getOwnedFile($userId, $id);
 
     $this->fileRepository->rename($id, $name);
 
@@ -177,7 +198,7 @@ class FileService
     int $userId,
     int $id
   ): void {
-    $file = $this->get($userId, $id);
+    $file = $this->getOwnedFile($userId, $id);
 
     $path = $this->storagePath . $file['stored_name'];
 
@@ -201,7 +222,7 @@ class FileService
       ? (int) $data['directory_id']
       : null;
 
-    $file = $this->get($userId, $id);
+    $file = $this->getOwnedFile($userId, $id);
 
     if ($directoryId !== null) {
       $directory = $this->directoryRepository->findById(
@@ -224,5 +245,52 @@ class FileService
     );
 
     return $this->get($userId, $id);
-  } 
+  }
+
+  private function getUploadErrorMessage(int $error): string
+  {
+    switch ($error) {
+      case UPLOAD_ERR_INI_SIZE:
+        return 'File exceeds the server upload limit';
+
+      case UPLOAD_ERR_FORM_SIZE:
+        return 'File exceeds the form upload limit';
+
+      case UPLOAD_ERR_PARTIAL:
+        return 'File was only partially uploaded';
+
+      case UPLOAD_ERR_NO_FILE:
+        return 'File is required';
+
+      case UPLOAD_ERR_NO_TMP_DIR:
+        return 'Temporary directory is missing';
+
+      case UPLOAD_ERR_CANT_WRITE:
+        return 'Unable to write uploaded file';
+
+      case UPLOAD_ERR_EXTENSION:
+        return 'File upload was stopped by an extension';
+
+      default:
+        return 'File upload failed';
+    }
+  }
+
+  private function getOwnedFile(
+    int $userId,
+    int $id
+  ): array {
+    $file = $this->fileRepository->findById($id);
+
+    if (
+      $file === null ||
+      (int) $file['user_id'] !== $userId
+    ) {
+      throw new RuntimeException(
+        'File not found'
+      );
+    }
+
+    return $file;
+  }
 }

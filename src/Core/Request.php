@@ -23,7 +23,7 @@ class Request
 
     if (
       $scriptDirectory !== '/' &&
-      str_starts_with($uri, $scriptDirectory)
+      strpos($uri, $scriptDirectory) === 0
     ) {
       $uri = substr($uri, strlen($scriptDirectory));
     }
@@ -56,7 +56,7 @@ class Request
 
     $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
 
-    if (str_contains($contentType, 'application/json')) {
+    if (strpos($contentType, 'application/json') !== false) {
       $body = file_get_contents('php://input');
       $data = json_decode($body ?: '', true);
 

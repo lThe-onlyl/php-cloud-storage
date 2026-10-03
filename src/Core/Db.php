@@ -84,7 +84,7 @@ class Db
   protected function findOneBy(
     string $table,
     string $field,
-    mixed $value
+    $value
   ): ?array {
     $statement = $this->pdo->prepare(
       "SELECT * FROM `$table` WHERE `$field` = :value LIMIT 1"
@@ -102,7 +102,7 @@ class Db
   protected function findBy(
     string $table,
     string $field,
-    mixed $value
+    $value
   ): array {
     $statement = $this->pdo->prepare(
       "SELECT * FROM `$table` WHERE `$field` = :value"

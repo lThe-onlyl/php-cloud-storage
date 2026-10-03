@@ -97,4 +97,20 @@ class UserRepository extends Db
       'role' => $role,
     ]);
   }
+
+  public function updatePassword(
+    int $id,
+    string $password
+  ): void {
+    $statement = $this->pdo->prepare(
+      'UPDATE users
+         SET password = :password
+         WHERE id = :id'
+    );
+
+    $statement->execute([
+      'id' => $id,
+      'password' => $password,
+    ]);
+  }
 }

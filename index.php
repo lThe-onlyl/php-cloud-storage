@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+$dotenv = Dotenv\Dotenv::createImmutable(
+  __DIR__
+);
+
+$dotenv->safeLoad();
+
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;
@@ -180,6 +186,18 @@ $router->add(
   'DELETE',
   '/files/share/{id}/{user_id}',
   [$fileController, 'unshare']
+);
+
+$router->add(
+  'GET',
+  '/users/reset_password',
+  [$userController, 'requestPasswordReset']
+);
+
+$router->add(
+  'POST',
+  '/users/reset-password',
+  [$userController, 'resetPassword']
 );
 
 $response = $router->processRequest($request);

@@ -116,4 +116,24 @@ class FileRepository extends Db
       'directory_id' => $directoryId,
     ]);
   }
+
+  public function getAccessibleByUser(int $userId): array
+  {
+    $statement = $this->pdo->prepare(
+      'SELECT DISTINCT f.*
+         FROM files f
+         LEFT JOIN file_shares fs
+             ON fs.file_id = f.id
+         WHERE f.user_id = :owner_id
+            OR fs.user_id = :shared_id
+         ORDER BY f.created_at DESC'
+    );
+
+    $statement->execute([
+      'owner_id' => $userId,
+      'shared_id' => $userId,
+    ]);
+
+    return $statement->fetchAll();
+  }
 }
